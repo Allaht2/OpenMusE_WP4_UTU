@@ -1,0 +1,670 @@
+---
+title: "Making OpenMusE survey datasets compatible with DDI standard"
+format: pdf
+editor: visual
+---
+
+This file shows how to create DDI codebooks for the Live Music Census datasets.
+
+```{r}
+# Libraries used
+library(DDIwR)
+library(haven)
+library(tidyverse)
+```
+
+```{r}
+# Loading the datasets
+census_data_all <- read_sav(
+  "../../input/data_processed/combined_census_data.sav") %>%
+  filter(exclude == 0) %>%
+  select(-c(Age, Age_group, exclude, screenout))
+var_label(census_data_all$Q3) <- "Which year were you born?"
+
+pre_snapshot <- read_sav("../../input/data_processed/pre_snapshot.sav")
+var_label(pre_snapshot$City) <- "City in which the venue is located"
+
+post_snapshot <- read_sav("../../input/data_processed/post_snapshot.sav")
+```
+
+## Audience census
+
+```{r}
+# Code for creating DDI codebook
+## Creates DDI codebook based on a dataframe
+### Audience census data
+codebook_audience <- getCodebook(census_data_all)
+### Adding metadata infromation like abstracts etc.
+abstract <- makeElement("abstract", content = "The Open Music Europe (OpenMusE) Audience Survey was undertaken as a part of the first pan-European Live Music Census survey data collection. The survey was made available online via a QR code to audiences in Helsinki (Finland), Lviv (Ukraine), Vilnius (Lithuania), Mannheim and Heidelberg (Germany) by the research distributors on the Live Music Census Snapshot Date of 11th October 2024 for a two-week period, to collect audiences' views and experiences on the local live music scenes. The survey was promoted for audiences via posters, glass coasters and flyers distributed by the local research teams in the days preceding the Snapshot date as well as through circulating the materials in live music events on the Snapshot date. The survey included questions on respondents' background information (gender, age, place of residence), general genre, venue and venue capacity preferences and overall satisfaction on the local scene, means of transport and expenditure on transport, tickets, food and drink, merchandise and accommodation when attending live music events on the Snapshot date, statements regarding views on safety, the motivation for attending live music events and obstacles in the way of live music attendance, views on live music events' economic and social responsibility, with an open question 'Why do you think a healthy live music scene is important in your city?' closing the survey. The aim of the survey was to map local audiences' views and experiences on the cultural, economic and social meaning and value of live music in their city. The audience survey received a total of 409 responses across the Census cities, with 164 responses from Helsinki, 52 replies from Lviv, 118 from Vilnius, 68 from Mannheim and 7 from Heidelberg.")
+title <- makeElement("titl",
+                     content = "Open Music Europe Live Music Census Audience Survey")
+IDNo <- makeElement("IDNo", content = "10.5281/zenodo.17340264")
+distrbtr <- makeElement("distrbtr", content = "University of Turku",
+                        attributes = c("abbr" = "UTU"))
+distrbtr2 <- makeElement("distrbtr", content = "SINUS Institute Germany",
+                        attributes = c("abbr" = "SINUS"))
+distrbtr3 <- makeElement("distrbtr", content = "Music Export Ukraine",
+                        attributes = c("abbr" = "MEU"))
+distrbtr4 <- makeElement("distrbtr", content = "Music Export Fund Lithuania",
+                        attributes = c("abbr" = "MXF"))
+holdings <- makeElement("holdings",
+                    attributes = c("URI" = "https://doi.org/10.5281/zenodo.17340264"))
+producer <- makeElement("producer", content = "Open Music Europe Consortium")
+prodDate <- makeElement("prodDate", content = "2024")
+timePrd <- makeElement("timePrd", content = "01.10.2024 - 31.11.2024")
+collDate1 <- makeElement("collDate", attributes = c("event" = "start"),
+                         content = "01.10.2024")
+collDate2 <- makeElement("collDate", attributes = c("event" = "end"),
+                         content = "31.10.2024")
+nation1 <- makeElement("nation", attributes = c("abbr" = "FI"),
+                       content = "Finland")
+nation2 <- makeElement("nation", attributes = c("abbr" = "DE"),
+                       content = "Germany")
+nation3 <- makeElement("nation", attributes = c("abbr" = "UA"),
+                       content = "Ukraine")
+nation4 <- makeElement("nation", attributes = c("abbr" = "LT"),
+                       content = "Lithuania")
+geogCover <- makeElement("geogCover",
+                         content = "Helsinki, Mannheim, Heidelberg, Lviv, Vilnius")
+geogUnit <- makeElement("geogUnit", content = "city")
+universe <- makeElement("universe", content = "People attending a live music event on October 11th 2024 in Helsinki, Mannheim, Heidelberg, Lviv and Vilnius.")
+keyword1 <- makeElement("keyword", content = "Live Music Research")
+keyword2 <- makeElement("keyword", content = "Live Music Audiences")
+keyword3 <- makeElement("keyword", content = "Live Music Ecosystems")
+keyword4 <- makeElement("keyword", content = "Live Music Ecologies")
+
+# StdyDscr
+addChildren(
+    makeElement("stdyDscr",
+                children = makeElement("stdyInfo", children = abstract)),
+    to = codebook_audience
+)
+
+# Citation
+addChildren(
+  makeElement("citation",
+              children = makeElement("titlStmt", children = title)),
+  to = codebook_audience$stdyDscr
+)
+
+# IDNo
+addChildren(
+  children = IDNo,
+  to = codebook_audience$stdyDscr$citation$titlStmt
+)
+
+# Distr
+addChildren(
+  makeElement("distStmt",
+              children = distrbtr),
+  to = codebook_audience$stdyDscr$citation
+)
+
+addChildren(
+  children = distrbtr2,
+  to = codebook_audience$stdyDscr$citation$distStmt
+)
+
+addChildren(
+  children = distrbtr3,
+  to = codebook_audience$stdyDscr$citation$distStmt
+)
+
+addChildren(
+  children = distrbtr4,
+  to = codebook_audience$stdyDscr$citation$distStmt
+)
+
+# Holdings
+addChildren(
+  children = holdings,
+  to = codebook_audience$stdyDscr$citation
+)
+
+# Producer
+addChildren(
+  makeElement("prodStmt",
+              children = producer),
+  to = codebook_audience$stdyDscr$citation
+)
+addChildren(
+  children = prodDate,
+  to = codebook_audience$stdyDscr$citation$prodStmt
+)
+
+# sumDscr
+addChildren(
+  makeElement("sumDscr",
+              children = timePrd),
+  to = codebook_audience$stdyDscr$stdyInfo
+)
+
+addChildren(
+  children = collDate1,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = collDate2,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = universe,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+
+# Nations
+addChildren(
+  children = nation1,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation2,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation3,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation4,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+
+# Geogcover
+addChildren(
+  children = geogCover,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = geogUnit,
+  to = codebook_audience$stdyDscr$stdyInfo$sumDscr
+)
+
+# Keywords
+addChildren(
+  makeElement("subject",
+              children = keyword1),
+  to = codebook_audience$stdyDscr$stdyInfo
+)
+
+addChildren(
+  children = keyword2,
+  to = codebook_audience$stdyDscr$stdyInfo$subject
+)
+
+addChildren(
+  children = keyword3,
+  to = codebook_audience$stdyDscr$stdyInfo$subject
+)
+
+addChildren(
+  children = keyword4,
+  to = codebook_audience$stdyDscr$stdyInfo$subject
+)
+
+### Writing the codebook
+exportCodebook(codebook_audience,
+      to = "../../input/data_processed/ddi_codebooks/audience_census_codebook.xml")
+
+```
+
+## Pre-snapshot venue survey
+
+```{r}
+### Pre snapshot
+codebook_pre <- getCodebook(pre_snapshot)
+### Adding metadata information
+abstract <- makeElement("abstract", content = "The OpenMusE pre-Snapshot venue survey was published and distributed to local venues in Helsinki, Lviv, Vilnius, Mannheim and Heidelberg preceding the OpenMusE Live Music Census Snapshot Date of 11th October 2024 to gather data on the operational and financial structures of live music venues across European cities. The aim of the survey was to better understand the current landscape of live music venues, including their staffing, revenue streams, and expenditures, to inform industry stakeholders and policymakers via collecting contextual information on the venues' everyday operations and the obstacles the venues were facing. The survey collected the following, confidential and anonymised information on the responding venues: venue name, address, contact details, legal status, and legal entity name; Venue type, capacity, range of activities and opening times (which months and weekdays) and the type of venue's premises; perveived challenges; statements regarding environmental sustaibility in venues and live music events, discrimination and corruption; and the following two open questions closing the survey: 'What should the government do to aid the live music scene in your city?' and 'What does your venue bring to the local area?'. The Pre-snapshot venue survey received a total of 72 responses across the Census cities, with 16 responses from Helsinki, 3 replies from Lviv, 26 from Vilnius, 20 from Mannheim and 7 from Heidelberg.")
+title <- makeElement("titl", content = "Open Music Europe Live Music Census Pre-Snapshot Venue Survey")
+IDNo <- makeElement("IDNo", content = "10.5281/zenodo.17348701")
+holdings <- makeElement("holdings",
+                  attributes =  c("URI" = "https://doi.org/10.5281/zenodo.17348701"))
+universe <- makeElement("universe", content = "Live music venues in Helsinki, Mannheim, Heidelberg, Lviv and Vilnius.")
+keyword2 <- makeElement("keyword", content = "Live Music Venues")
+
+
+# StdyDscr
+addChildren(
+    makeElement("stdyDscr",
+                children = makeElement("stdyInfo", children = abstract)),
+    to = codebook_pre
+)
+
+# Citation
+addChildren(
+  makeElement("citation",
+              children = makeElement("titlStmt", children = title)),
+  to = codebook_pre$stdyDscr
+)
+
+# IDNo
+addChildren(
+  children = IDNo,
+  to = codebook_pre$stdyDscr$citation$titlStmt
+)
+
+# Distr
+addChildren(
+  makeElement("distStmt",
+              children = distrbtr),
+  to = codebook_pre$stdyDscr$citation
+)
+
+addChildren(
+  children = distrbtr2,
+  to = codebook_pre$stdyDscr$citation$distStmt
+)
+
+addChildren(
+  children = distrbtr3,
+  to = codebook_pre$stdyDscr$citation$distStmt
+)
+
+addChildren(
+  children = distrbtr4,
+  to = codebook_pre$stdyDscr$citation$distStmt
+)
+
+
+
+# Holdings
+addChildren(
+  children = holdings,
+  to = codebook_pre$stdyDscr$citation
+)
+
+# Producer
+addChildren(
+  makeElement("prodStmt",
+              children = producer),
+  to = codebook_pre$stdyDscr$citation
+)
+addChildren(
+  children = prodDate,
+  to = codebook_pre$stdyDscr$citation$prodStmt
+)
+
+# sumDscr
+addChildren(
+  makeElement("sumDscr",
+              children = timePrd),
+  to = codebook_pre$stdyDscr$stdyInfo
+)
+
+addChildren(
+  children = collDate1,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = collDate2,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = universe,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+
+# Nations
+addChildren(
+  children = nation1,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation2,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation3,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation4,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+
+# Geogcover
+addChildren(
+  children = geogCover,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = geogUnit,
+  to = codebook_pre$stdyDscr$stdyInfo$sumDscr
+)
+
+# Keywords
+addChildren(
+  makeElement("subject",
+              children = keyword1),
+  to = codebook_pre$stdyDscr$stdyInfo
+)
+
+addChildren(
+  children = keyword2,
+  to = codebook_pre$stdyDscr$stdyInfo$subject
+)
+
+addChildren(
+  children = keyword3,
+  to = codebook_pre$stdyDscr$stdyInfo$subject
+)
+
+addChildren(
+  children = keyword4,
+  to = codebook_pre$stdyDscr$stdyInfo$subject
+)
+
+
+exportCodebook(codebook_pre,
+      to = "../../input/data_processed/ddi_codebooks/pre_snapshot_venue_survey_codebook.xml")
+```
+
+## Post-snasphot venue survey
+
+```{r}
+### Post snapshot
+codebook_post <- getCodebook(post_snapshot)
+
+### Adding metadata information
+abstract <- makeElement("abstract", content = "The OpenMusE post-Snapshot venue survey's purpose was to gather data on the operational and financial structures of all live music venues as well as to collect details of live music events that took place on the OpenMusE Live Music Census Snapshot date of 11th October 2024 from the venues hosting events on the date in question. The survey collected the following, confidential and anonymised information on the responding venues: venue name, address, contact details, legal status, and legal entity name; Staff composition (regular employees, freelancers, volunteers), working hours, and gender identification; Total annual revenue and percentage of revenue by category (ticket sales; food and drink sales; external rentals; public subsidies; private subsidies; other); and Total annual expenditure and percentage of expenditure by category (tax; rental/mortgage; programme costs; employment costs; infrastructure and utility costs; accommodation costs; other). Additionally, the survey collected following details on venues' hosting events on the Snapshot date of 11th October 2024: estimated audience attendance, number of events on the date, cost of entry and genre of event. The overall aim of the survey was to better understand the current landscape of live music venues, including their staffing, revenue streams, and expenditures, to inform industry stakeholders and policymakers. The post-Snapshot venue survey received a total of 56 responses across the Census cities, with 12 responses from Helsinki, 19 replies from Lviv, 14 from Vilnius, 8 from Mannheim and 3 from Heidelberg.")
+title <- makeElement("titl", content = "Open Music Europe Live Music Census Post-Snapshot Venue Survey")
+IDNo <- makeElement("IDNo", content = "10.5281/zenodo.17348742")
+holdings <- makeElement("holdings",
+                  attributes = c("URI" = "https://doi.org/10.5281/zenodo.17348742"))
+universe <- makeElement("universe", content = "Venues providing live music")
+
+# StdyDscr
+addChildren(
+    makeElement("stdyDscr",
+                children = makeElement("stdyInfo", children = abstract)),
+    to = codebook_post
+)
+
+# Citation
+addChildren(
+  makeElement("citation",
+              children = makeElement("titlStmt", children = title)),
+  to = codebook_post$stdyDscr
+)
+
+# IDNo
+addChildren(
+  children = IDNo,
+  to = codebook_post$stdyDscr$citation$titlStmt
+)
+
+# Distr
+addChildren(
+  makeElement("distStmt",
+              children = distrbtr),
+  to = codebook_post$stdyDscr$citation
+)
+
+addChildren(
+  children = distrbtr2,
+  to = codebook_post$stdyDscr$citation$distStmt
+)
+
+addChildren(
+  children = distrbtr3,
+  to = codebook_post$stdyDscr$citation$distStmt
+)
+
+addChildren(
+  children = distrbtr4,
+  to = codebook_post$stdyDscr$citation$distStmt
+)
+
+# Holdings
+addChildren(
+  children = holdings,
+  to = codebook_post$stdyDscr$citation
+)
+
+# Producer
+addChildren(
+  makeElement("prodStmt",
+              children = producer),
+  to = codebook_post$stdyDscr$citation
+)
+addChildren(
+  children = prodDate,
+  to = codebook_post$stdyDscr$citation$prodStmt
+)
+
+# sumDscr
+addChildren(
+  makeElement("sumDscr",
+              children = timePrd),
+  to = codebook_post$stdyDscr$stdyInfo
+)
+
+addChildren(
+  children = collDate1,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = collDate2,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = universe,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+
+# Nations
+addChildren(
+  children = nation1,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation2,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation3,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+addChildren(
+  children = nation4,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+
+# Geogcover
+addChildren(
+  children = geogCover,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+
+addChildren(
+  children = geogUnit,
+  to = codebook_post$stdyDscr$stdyInfo$sumDscr
+)
+
+# Keywords
+addChildren(
+  makeElement("subject",
+              children = keyword1),
+  to = codebook_post$stdyDscr$stdyInfo
+)
+
+addChildren(
+  children = keyword2,
+  to = codebook_post$stdyDscr$stdyInfo$subject
+)
+
+addChildren(
+  children = keyword3,
+  to = codebook_post$stdyDscr$stdyInfo$subject
+)
+
+addChildren(
+  children = keyword4,
+  to = codebook_post$stdyDscr$stdyInfo$subject
+)
+
+exportCodebook(codebook_post,
+      to = "../../input/data_processed/ddi_codebooks/post_snapshot_venue_survey_codebook.xml")
+
+```
+
+## Creating questionaires for the datasets
+
+```{r}
+guess_qtype <- function(x) {
+  labs <- val_labels(x)
+  # labelled vectors keep labels as a named numeric vector
+  if (!is.null(labs) && length(labs) > 1) return("single choice")           # e.g., 1=Yes, 2=No, 3=DK
+  if (is.numeric(x) && !is.null(labs) && length(labs) == 1 &&
+      all(na.omit(unique(x)) %in% c(0, 1))) return("multiple (dichotomous)") # many checkboxes 0/1
+  if (is.numeric(x) && is.null(labs)) return("numeric/open")
+  if (is.character(x)) return("text")
+  "unknown"
+}
+
+format_options <- function(x) {
+  labs <- val_labels(x)
+  if (is.null(labs) || length(labs) == 0) return(NA_character_)
+  # val_labels is a named numeric vector: names = labels, values = codes
+  opts <- paste0(names(labs), " [", as.vector(labs), "]")
+  paste(opts, collapse = " | ")
+}
+
+make_questionnaire <- function(path, group_by_varlabel = TRUE) {
+  df <- path  # keeps haven_labelled with labels intact
+
+  spec <- imap_dfr(df, function(col, nm) {
+    tibble(
+      variable   = nm,
+      question   = var_label(col) %||% nm,
+      qtype      = guess_qtype(col),
+      options    = format_options(col)
+    )
+  })
+
+  # Optional: group “checkbox grids” by identical question text (common in SPSS)
+  if (group_by_varlabel) {
+    spec <- spec %>%
+      group_by(question) %>%
+      mutate(group_id = cur_group_id(),
+             variables_in_group = paste(variable, collapse = ", "),
+             has_multiple = any(str_detect(qtype, "multiple|dichotomous"))) %>%
+      ungroup()
+  }
+
+  spec
+}
+
+questionnaire_audience <- make_questionnaire(census_data_all,
+                                             group_by_varlabel = FALSE)
+
+md_text_audience <- paste0(
+    "# Questionnaire\n\n",
+    paste0(
+        apply(questionnaire_audience, 1, function(row) {
+            opts <- if (!is.na(row["options"])) {
+                paste0("**Options:**\n", 
+                       paste0("- ", unlist(strsplit(row["options"], ",\\s*")), collapse = "\n"))
+            } else ""
+            paste0(
+                "## ", row["variable"], "\n",
+                "**Question:** ", row["question"], "\n",
+                "**Type:** ", row["qtype"], "\n",
+                opts, "\n\n---\n\n"
+            )
+        }),
+        collapse = ""
+    )
+)
+
+questionnaire_pre <- make_questionnaire(pre_snapshot, group_by_varlabel = FALSE)
+
+md_text_pre <- paste0(
+    "# Questionnaire\n\n",
+    paste0(
+        apply(questionnaire_pre, 1, function(row) {
+            opts <- if (!is.na(row["options"])) {
+                paste0("**Options:**\n", 
+                       paste0("- ", unlist(strsplit(row["options"], ",\\s*")), collapse = "\n"))
+            } else ""
+            paste0(
+                "## ", row["variable"], "\n",
+                "**Question:** ", row["question"], "\n",
+                "**Type:** ", row["qtype"], "\n",
+                opts, "\n\n---\n\n"
+            )
+        }),
+        collapse = ""
+    )
+)
+
+questionnaire_post <- make_questionnaire(post_snapshot, group_by_varlabel = FALSE)
+
+md_text_post <- paste0(
+    "# Questionnaire\n\n",
+    paste0(
+        apply(questionnaire_post, 1, function(row) {
+            opts <- if (!is.na(row["options"])) {
+                paste0("**Options:**\n", 
+                       paste0("- ", unlist(strsplit(row["options"], ",\\s*")), collapse = "\n"))
+            } else ""
+            paste0(
+                "## ", row["variable"], "\n",
+                "**Question:** ", row["question"], "\n",
+                "**Type:** ", row["qtype"], "\n",
+                opts, "\n\n---\n\n"
+            )
+        }),
+        collapse = ""
+    )
+)
+```
+
+## Saving the datasets
+
+```{r}
+# Audience data
+haven::write_sav(census_data_all, 
+                 "../../input/data_processed/ddi_codebooks/audience_census.sav")
+census_data_all_csv <- census_data_all %>%
+  mutate(across(where(is.labelled), ~ to_factor(.x, levels = "labels")))
+
+write_csv(census_data_all_csv,
+    "../../input/data_processed/ddi_codebooks/audience_census.csv", na = "")
+
+writeLines(md_text, "../../input/data_processed/ddi_codebooks/audience_census_questionnaire.md")
+
+# Pre snapshot data
+haven::write_sav(pre_snapshot, 
+            "../../input/data_processed/ddi_codebooks/pre_snapshot_venue_survey.sav")
+
+pre_snapshot_csv <- pre_snapshot %>%
+  mutate(across(where(is.labelled), ~ to_factor(.x, levels = "labels")))
+
+write_csv(pre_snapshot_csv,
+    "../../input/data_processed/ddi_codebooks/pre_snapshot_venue_survey.csv", na = "")
+
+writeLines(md_text_pre, "../../input/data_processed/ddi_codebooks/pre_snapshot_venue_survey_questionnaire.md")
+
+
+# Post snapshot data
+haven::write_sav(post_snapshot, 
+            "../../input/data_processed/ddi_codebooks/post_snapshot_venue_survey.sav")
+
+post_snapshot_csv <- post_snapshot %>%
+  mutate(across(where(is.labelled), ~ to_factor(.x, levels = "labels")))
+
+write_csv(post_snapshot_csv,
+    "../../input/data_processed/ddi_codebooks/post_snapshot_venue_survey.csv",
+    na = "")
+
+writeLines(md_text_post, "../../input/data_processed/ddi_codebooks/post_snapshot_venue_survey_questionnaire.md")
+```
